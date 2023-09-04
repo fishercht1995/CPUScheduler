@@ -15,9 +15,9 @@ def index():
 def generate_file():
     number = int(request.form.get("param1"))
     iat = int(request.form.get("param2"))
-
+    std = float(request.form.get("param3"))
     outpath = './workloads/generated_workload.txt'
-    workload.generateWorkload(number, iat, outpath)
+    workload.generateWorkload(number, iat, outpath, std)
     
     return send_file(outpath, as_attachment=True)
 
@@ -37,7 +37,7 @@ def upload_file():
                 period = 20
             else:
                 period = 1000
-
+            print("policy: ", p)
             simulate.simulate(w, p, "./static/data/{}/".format(p), period = period, CScost = cscost)
             inputfiles.append("./static/data/{}/data.csv".format(p))
         processD = analyzeData(policies, inputfiles)

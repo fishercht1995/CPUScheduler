@@ -30,7 +30,7 @@ def simulate(workloads, policy, outpath, timeSlice = 6, period = 1000, CScost = 
     finishedJobs = 0
     hasContextSwitch = True
     started = 0
-    CScostSignal = False
+    #CScostSignal = False
     while finishedJobs < len(workloads):
         # start new jobs
         if t in timePath:
@@ -44,10 +44,10 @@ def simulate(workloads, policy, outpath, timeSlice = 6, period = 1000, CScost = 
                 else:
                     sched.enqueue(jb)
                 started += 1
-        if CScostSignal:
-            t += CScost
-            CScostSignal = False
-            continue
+        #if CScostSignal:
+        #    t += CScost
+        #    CScostSignal = False
+        #    continue
         # if scheduler queue empty pass
         if sched.is_empty() and hasContextSwitch:
             t += 1
@@ -66,7 +66,7 @@ def simulate(workloads, policy, outpath, timeSlice = 6, period = 1000, CScost = 
                 j.execute()
                 if checkContextSwitch(policy, j, sched, timeSlice):
                     # do contextSwitch, if not finished return to the queue
-                    CScostSignal = True
+                    #CScostSignal = True
                     hasContextSwitch = True
                     if j.isEnd():
                         finishedJobs += 1
@@ -86,7 +86,7 @@ def simulate(workloads, policy, outpath, timeSlice = 6, period = 1000, CScost = 
                 hasContextSwitch = False
                 if checkContextSwitch(policy, j, sched, timeSlice):
                     # do contextSwitch, if not finished return to the queue
-                    CScostSignal = True
+                    #CScostSignal = True
                     hasContextSwitch = True
                     if j.isEnd():
                         finishedJobs += 1
