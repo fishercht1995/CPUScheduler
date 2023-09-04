@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPU scheduling simulation</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>CPU scheduling simulation</h1>
+    <h2>Generate Workload</h2>
+    <form action="/generate" method="post" enctype="multipart/form-data">
+        <label for="parameter1">number of jobs</label>
+        <input type="number" id="parameter1" name="param1">
+        <br>
+        <label for="parameter2">interval of arrival time:</label>
+        <input type="number" id="parameter2" name="param2">
+        <br>
+        <button type="submit">Generate and Download</button>
+    </form>
+
+    <h2>Simulate Workload</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="fileToUpload">Choose File</label>
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <br>
+        <button type="submit">Simulate</button>
+    </form>
+    <h2>Simple Test</h2>
+    <button id="addRowButton">add job</button>
+    <table id="customTable">
+        <thead>
+            <tr>
+                <th>function name</th>
+                <th>start time</th>
+                <th>burst time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 这里是用于添加用户输入数据的行 -->
+        </tbody>
+    </table>
+    <button id="submitButton">Simulate</button>
+    <div id="resultContainer"></div>
+    <script>
+        // 获取添加行按钮和表格元素
+        var addRowButton = document.getElementById("addRowButton");
+        var customTableBody = document.querySelector("#customTable tbody");
+        var submitButton = document.getElementById("submitButton");
+
+        // 添加行按钮点击事件
+        addRowButton.addEventListener("click", function () {
+            // 创建新行
+            var newRow = document.createElement("tr");
+
+            // 创建单元格并添加到新行
+            for (var i = 0; i < 3; i++) {
+                var cell = document.createElement("td");
+                var inputElement = document.createElement("input");
+                inputElement.type = "text";
+                inputElement.placeholder = "input";
+                cell.appendChild(inputElement);
+                newRow.appendChild(cell);
+            }
+
+            // 将新行添加到表格
+            customTableBody.appendChild(newRow);
+        });
+
+        // 提交按钮点击事件
+        submitButton.addEventListener("click", function () {
+            // 收集用户输入的数据
+            var data = [];
+            var rows = customTableBody.getElementsByTagName("tr");
+
+            for (var i = 0; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                var rowData = [];
+
+                for (var j = 0; j < cells.length; j++) {
+                    var inputElement = cells[j].querySelector("input");
+                    rowData.push(inputElement.value);
+                }
+
+                data.push(rowData);
+            }
+
+            // 将数据发送到后端
+            sendDataToBackend(data);
+        });
+
+        // 发送数据到后端的函数
+        function sendDataToBackend(data) {
+            fetch("/process-data", {
+                method: "POST",
+                body: JSON.stringify({ "user_data": data }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 在这里处理后台返回的响应
+                displayData(data);
+            })
+            .catch(error => {
+                console.error("error: " + error);
+            });
+        }
+
+        // 在网页上显示数据的函数
+        function displayData(data) {
+            // 假设您想要将处理后的数据显示在网页上的某个元素中
+            var resultContainer = document.getElementById("resultContainer");
+
+            // 清空结果容器
+            resultContainer.innerHTML = "";
+
+            // 创建一个新的 HTML 元素，用于显示数据
+            var resultElement = document.createElement("div");
+            resultElement.textContent = JSON.stringify(data);
+
+            // 将结果元素添加到结果容器中
+            resultContainer.appendChild(resultElement);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simulation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            padding: 20px;
+        }
+
+        .result-container {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-heading {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .numerical-results {
+            margin-bottom: 20px;
+        }
+
+        .numerical-results table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .numerical-results th, .numerical-results td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .numerical-results th {
+            background-color: #333;
+            color: white;
+        }
+
+        .numerical-results tr:nth-child(odd) {
+            background-color: #e5e5e5;
+        }
+
+        .numerical-results tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .result-image {
+            text-align: center;
+        }
+
+        .result-image img {
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+        }
+        .data-table-container {
+            margin-top: 20px;
+        }
+
+        .data-table-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table-container th, .data-table-container td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .data-table-container th {
+            background-color: #333;
+            color: white;
+        }
+
+        .data-table-container tr:nth-child(odd) {
+            background-color: #e5e5e5;
+        }
+
+        .data-table-container tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload Result</h2>
+    <div class="result-container">
+        <div class="result-heading">Job Results</div>
+
+        <!-- 新增数据容器 -->
+        <div class="data-table-container">
+            <h3>Numerical Results</h3>
+            <table>
+                <tr>
+                    <th>Algorithm</th>
+                    <th>Class ID</th>
+                    <th>50</th>
+                    <th>75</th>
+                </tr>
+                <!-- 数据将被插入到这里 -->
+            </table>
+        </div>
+
+        <!-- 图像结果 -->
+        <div class="result-image">
+            <h3>Graphical Results</h3>
+            <!-- 插入图像 -->
+            <img src="./static/example.jpeg" alt="Graphical Result">
+        </div>
+
+    </div>
+
+    <script>
+        // 使用JavaScript动态插入数据
+        var data = {{ data|tojson|safe }};
+        var dataContainer = document.querySelector('.data-table-container table');
+
+        // 插入数值结果数据
+        for (var algorithm in data.processed_data) {
+            for (var classId in data.processed_data[algorithm]) {
+                var rowData = data.processed_data[algorithm][classId];
+                var rowHtml = `<tr><td>${algorithm}</td><td>${classId}</td><td>${rowData[50]}</td><td>${rowData[75]}</td></tr>`;
+                dataContainer.innerHTML += rowHtml;
+            }
+        }
+    </script>
+</body>
+</html>

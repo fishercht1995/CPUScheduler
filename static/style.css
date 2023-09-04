@@ -1,0 +1,61 @@
+h1{
+    text-align:center;
+    font-size:36px;
+    font-weight: 600;
+}
+
+body {
+    background-color: white;
+  }
+
+h2{
+    text-align:center;
+    font-size:30px;
+    font-weight: 600;
+    margin:10px;
+}
+
+/* for the run button */
+/*
+button{
+    background-color: #4caf50; 
+    color:aliceblue; 
+    height: 35px; 
+    margin-right: 70px;
+    padding-left: 15px;
+    padding-right: 15px;
+    
+}*/
+
+table {
+    background-color: #f2f2f2; /* 用您喜欢的颜色替换此值 */
+    border-collapse: collapse;
+    width: 100%;
+    height: 40px;
+}
+
+/* 设置表格中的表头行的背景颜色 */
+th {
+    background-color: lightcyan;
+    color: #100f0f;
+}
+
+/* 设置表格中的奇数行的背景颜色 */
+tc:nth-child(odd) {
+    background-color: #e5e5e5;
+}
+
+/* 设置表格中的偶数行的背景颜色 */
+tc:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* 设置表格中的链接文本颜色 */
+a {
+    color: blue; /* 用您喜欢的颜色替换此值 */
+}
+
+input[type="text"] {
+    width: 100%;
+    box-sizing: border-box; /* 确保宽度包括边框和填充 */
+}
