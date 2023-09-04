@@ -113,9 +113,7 @@ def drawCDF(policies, inputfiles):
         p = policies[i]
         durations = sorted(list(pd.read_csv(inputfiles[i], sep = ";")[" duration"]))
         ecdf = sm.distributions.ECDF(durations)
-        #等差数列，用于绘制X轴数据
         x = np.linspace(min(durations), max(durations),90000)
-        # x轴数据上值对应的累计密度概率
         y = ecdf(x)
         plt.step(x, y,label = p,linewidth=2)
     plt.legend(fontsize = 15)
