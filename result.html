@@ -99,8 +99,12 @@
                 <tr>
                     <th>Algorithm</th>
                     <th>Class ID</th>
-                    <th>50</th>
-                    <th>75</th>
+                    <th>Context Switch</th>
+                    <th>Wait</th>
+                    <th>p50</th>
+                    <th>p75</th>
+                    <th>p90</th>
+                    <th>p99</th>
                 </tr>
                 <!-- 数据将被插入到这里 -->
             </table>
@@ -110,7 +114,7 @@
         <div class="result-image">
             <h3>Graphical Results</h3>
             <!-- 插入图像 -->
-            <img src="./static/example.jpeg" alt="Graphical Result">
+            <img src="./static/cdf.png" alt="Graphical Result">
         </div>
 
     </div>
@@ -124,7 +128,8 @@
         for (var algorithm in data.processed_data) {
             for (var classId in data.processed_data[algorithm]) {
                 var rowData = data.processed_data[algorithm][classId];
-                var rowHtml = `<tr><td>${algorithm}</td><td>${classId}</td><td>${rowData[50]}</td><td>${rowData[75]}</td></tr>`;
+                var rowHtml = `<tr><td>${algorithm}</td><td>${classId}</td><td>${rowData["ContextSwitch"]}</td><td>${rowData["wait"]}</td>
+    <td>${rowData["p50"]}</td><td>${rowData["p75"]}</td><td>${rowData["p90"]}</td><td>${rowData["p99"]}</td></tr>`;
                 dataContainer.innerHTML += rowHtml;
             }
         }

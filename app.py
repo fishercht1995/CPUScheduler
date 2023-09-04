@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from schedulers import simulate
 from schedulers.workload import readWorkload
+from schedulers.analyze import analyzeData, drawPlot
 import os
 from workloads import workload
 
@@ -22,28 +23,28 @@ def generate_file():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    policies = ["rr", "fifo"]
+    policies = ["rr", "fifo", "srtf", "seal", "sfs"]
+    inputfiles = []
     uploaded_file = request.files['fileToUpload']
-
+    cscost = int(request.form["cscost"])
     if uploaded_file:
         file_path = 'uploaded_files/' + uploaded_file.filename  # 保存到服务器的路径
         uploaded_file.save(file_path)
         for p in policies:
             w = readWorkload(file_path)
-            simulate.simulate(w, p, "./static/data/{}/".format(p))
-            print("finish ", p)
+
+            if p == "sfs":
+                period = 20
+            else:
+                period = 1000
+
+            simulate.simulate(w, p, "./static/data/{}/".format(p), period = period, CScost = cscost)
+            inputfiles.append("./static/data/{}/data.csv".format(p))
+        processD = analyzeData(policies, inputfiles)
+        drawPlot(policies, inputfiles)
         data = {
         "message": "数据处理成功",
-        "processed_data": {
-            "cfs": {
-                1: {50: 30, 75: 40},
-                2: {50: 30, 75: 40}
-            },
-            "fifo": {
-                1: {50: 30, 75: 40},
-                2: {50: 30, 75: 40}
-            }
-        }
+        "processed_data": processD
     }
         return render_template('result.html', data = data)
 

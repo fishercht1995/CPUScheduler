@@ -1,55 +1,13 @@
 from . import scheduler
 from . import job
 from . import analyze
-class simulateLog:
-    def __init__(self):
-        self.durations = {}
-        self.contextS = {}
-        self.timeSlice = {}
-        self.jobSummary = {}
-        self.idle = 0
-        self.total = 0
-    def jobEnd(self, j, t):
-        # update durations
-        if j.classid not in self.durations:
-            self.durations[j.classid] = {}
-        self.durations[j.classid][j.name] = j.endTime - j.startTime
+from .utility import generateOutput, checkContextSwitch
 
-        # update jobSummary
-        if j.classid not in self.jobSummary:
-            self.jobSummary[j.classid] = {}
-        self.jobSummary[j.classid][j.name] = {"start": j.startTime, "burst": j.burstTime, "end": j.endTime, "wait": j.waitTime, "contextSwitch": j.contextS}
 
-        self.jobContextSwitch(j, t)
-    def jobContextSwitch(self,j,t):
-        # update contextS
-        if j.classid not in self.contextS:
-            self.contextS[j.classid] = {}
-        if j.name not in self.contextS[j.classid]:
-            self.contextS[j.classid][j.name] = []
-        self.contextS[j.classid][j.name].append(t)
-
-        # update timeslice
-        if j.classid not in self.timeSlice:
-            self.timeSlice[j.classid] = {}
-        if j.name not in self.timeSlice[j.classid]:
-            self.timeSlice[j.classid][j.name] = []
-        self.timeSlice[j.classid][j.name].append(j.executed)
-    
-def generateOutput(slog, outPath):
-    # write data
-    analyze.writeLogs(outPath, slog.durations, slog.contextS, slog.timeSlice, slog.jobSummary)
-
-def checkContextSwitch(policy, j, sched, timeSlice):
-    if policy in ["fifo", "rr"]:
-        return (j.executedTime() >= timeSlice and not sched.is_empty()) or j.isEnd()
-    else:
-        return False
-
-def simulate(workloads, policy, outpath, timeSlice = 6):
+def simulate(workloads, policy, outpath, timeSlice = 6, period = 1000, CScost = 1):
     # build workload time path
     timePath = {}
-    log = simulateLog()
+    log = analyze.simulateLog(timeSlice)
     for jb in workloads:
         if jb.startTime not in timePath:
             timePath[jb.startTime] = [jb]
@@ -62,15 +20,34 @@ def simulate(workloads, policy, outpath, timeSlice = 6):
         sched = scheduler.FIFOScheduler()
     elif policy == "rr":
         sched = scheduler.RRScheduler()
+    elif policy == "srtf":
+        sched = scheduler.SRTFScheduler()
+    elif policy == "seal":
+        sched = scheduler.SEALScheduler(timeSlice, period)
+    elif policy == "sfs":
+        sched = scheduler.SFSScheduler(timeSlice, period)
     t = 0
     finishedJobs = 0
     hasContextSwitch = True
+    started = 0
+    CScostSignal = False
     while finishedJobs < len(workloads):
         # start new jobs
         if t in timePath:
             for jb in timePath[t]:
-                sched.enqueue(jb)
-        
+                if policy == "sfs":
+                    jb.Priority = 0
+                    sched.updateArrival()
+                    sched.firstEnqueue(jb)
+                    if started % period == 0 and policy == "sfs":
+                        sched.updatePolicy(t)
+                else:
+                    sched.enqueue(jb)
+                started += 1
+        if CScostSignal:
+            t += CScost
+            CScostSignal = False
+            continue
         # if scheduler queue empty pass
         if sched.is_empty() and hasContextSwitch:
             t += 1
@@ -81,14 +58,24 @@ def simulate(workloads, policy, outpath, timeSlice = 6):
                 j = sched.next()
                 if j.waitTime == -1:
                     j.waitTime = t - j.startTime
+                if policy == "seal":
+                    timeSlice = sched.getTimeSlice(j)
+                elif policy == "sfs":
+                    timeSlice = sched.getTimeSlice(j)
+                    j.Priority = 99
                 j.execute()
                 if checkContextSwitch(policy, j, sched, timeSlice):
                     # do contextSwitch, if not finished return to the queue
+                    CScostSignal = True
                     hasContextSwitch = True
                     if j.isEnd():
                         finishedJobs += 1
                         j.endTime = t
                         log.jobEnd(j, t)
+                        if finishedJobs % period == 0 and policy == "seal":
+                            sched.updatePolicy(log)
+                        if started % period == 0 and policy == "sfs":
+                            sched.updatePolicy(t)
                     else:
                         j.contextS += 1
                         sched.enqueue(j)
@@ -99,11 +86,14 @@ def simulate(workloads, policy, outpath, timeSlice = 6):
                 hasContextSwitch = False
                 if checkContextSwitch(policy, j, sched, timeSlice):
                     # do contextSwitch, if not finished return to the queue
+                    CScostSignal = True
                     hasContextSwitch = True
                     if j.isEnd():
                         finishedJobs += 1
                         j.endTime = t
                         log.jobEnd(j, t)
+                        if finishedJobs % period == 0 and policy == "seal":
+                            sched.updatePolicy(log)
                     else:
                         j.contextS += 1
                         sched.enqueue(j)
@@ -119,11 +109,3 @@ def simulate(workloads, policy, outpath, timeSlice = 6):
     #print(log.timeSlice)
     #print(log.jobSummary)
     print(1 - log.idle/log.total)
-
-def test():
-    a = job.Job("fib1", 0, 100)
-    b = job.Job("fib2", 1, 10)
-    c = job.Job("fib3", 15, 20)
-    workloads = [a,b,c]
-    a = {"cfs":{1:{50:30, 75: 40}, 2:{50:30, 75: 40}}, "fifo":{1:{50:30, 75: 40}, 2:{50:30, 75: 40}}}
-    simulate(workloads, "fifo")

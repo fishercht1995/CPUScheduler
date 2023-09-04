@@ -1,11 +1,12 @@
 class Job:
-    def __init__(self, name, startTime, burstTime, classid, Priority = 0):
+    def __init__(self, name, startTime, burstTime, classid, jobid, Priority = 0):
         self.name = name
         self.startTime = startTime
         self.burstTime = burstTime
         self._remainingTime = self.burstTime
         self.Priority = Priority
         self.classid = classid
+        self.id = jobid
         self.executed = 0
         self.endTime = -1
         self.contextS = 0
@@ -20,4 +21,10 @@ class Job:
     
     def isEnd(self):
         return self._remainingTime == 0
+    
+    def __lt__(self, other):
+        return self.id < other.id
+    
+    def __str__(self):
+        return f"job instance with value: <{self.name}, {self.startTime}, {self.burstTime}>"
 

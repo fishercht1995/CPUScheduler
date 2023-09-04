@@ -23,7 +23,7 @@ def generateWorkload(N, iat, outPath):
         invocationId = "{}_{}".format(functype, i)
         startTime = t
         i += 1
-        f.write("{} {} {} {}\n".format(invocationId, startTime, burstTime, class_id))
+        f.write("{} {} {} {} {}\n".format(invocationId, startTime, burstTime, class_id, i))
     f.close()
 
 
